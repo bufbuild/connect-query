@@ -1,13 +1,17 @@
 {
-  "name": "protoc-gen-connect-query",
-  "version": "0.2.1",
+  "name": "@bufbuild/protoc-gen-connect-query",
+  "version": "0.0.8",
   "description": "Code generator for connect-query",
   "license": "Apache-2.0",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "https://github.com/bufbuild/connect-query.git",
     "directory": "packages/protoc-gen-connect-query"
   },
+  "files": [
+    "dist/**"
+  ],
   "bin": {
     "protoc-gen-connect-query": "bin/protoc-gen-connect-query"
   },
@@ -15,25 +19,23 @@
     "node": ">=16"
   },
   "scripts": {
-    "clean": "rm -rf ./dist/cjs/*",
-    "pregenerate": "npm run build && rm -rf gen",
-    "generate": "buf generate",
+    "clean": "rm -rf dist",
     "test": "jest",
-    "build": "npx tsc --project tsconfig.build.json",
-    "build:descriptorset": "buf build --output src/jest/descriptorset.bin"
+    "build": "pnpm clean && tsc --project tsconfig.build.json"
   },
   "preferUnplugged": true,
   "devDependencies": {
+    "@bufbuild/protoc-gen-connect-web": "^0.5.0",
+    "@bufbuild/protoc-gen-es": "^1.0.0",
+    "generated-react": "*",
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@bufbuild/protoplugin": "^0.4.0",
-    "@bufbuild/protobuf": "^0.4.0",
-    "@bufbuild/protoc-gen-connect-web": "^0.3.3",
-    "@bufbuild/protoc-gen-es": "^0.4.0"
+    "@bufbuild/protoplugin": "^1.0.0",
+    "@bufbuild/protobuf": "^1.0.0"
   },
   "peerDependencies": {
-    "@bufbuild/protoc-gen-es": "0.1.1"
+    "@bufbuild/protoc-gen-es": "1.x"
   },
   "peerDependenciesMeta": {
     "@bufbuild/protoc-gen-es": {

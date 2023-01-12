@@ -1,9 +1,13 @@
 {
-  "name": "connect-query",
-  "version": "0.0.1",
+  "name": "@bufbuild/connect-query",
+  "version": "0.0.8",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "license": "Apache-2.0",
+  "sideEffects": false,
+  "files": [
+    "dist/**"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/bufbuild/connect-query.git",
@@ -11,27 +15,30 @@
   },
   "scripts": {
     "clean": "rm -rf dist",
-    "prebuild": "npm run clean",
-    "build": "tsc --project tsconfig.build.json",
-    "test": "jest",
-    "pregenerate": "rm -rf src/jest/mock-data/eliza",
-    "generate": "buf generate ."
+    "build": "pnpm run clean && tsc --project tsconfig.build.json",
+    "test": "jest"
   },
   "devDependencies": {
-    "@types/react": "^18.0.26",
-    "@types/react-dom": "^18.0.9",
+    "@bufbuild/protoc-gen-es": "^1.0.0",
+    "@tanstack/react-query": "^4.20.4",
     "@testing-library/react": "^13.4.0",
-    "jest-environment-jsdom": "^29.3.1"
-  },
-  "dependencies": {
-    "@bufbuild/connect-web": "^0.3.3",
-    "@bufbuild/protobuf": "^0.4.0",
-    "@bufbuild/protoc-gen-es": "^0.4.0",
-    "@bufbuild/protoplugin": "^0.4.0",
-    "@tanstack/react-query": "^4.19.1",
-    "stable-hash": "^0.0.2",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.10",
+    "generated-react": "*",
+    "jest-environment-jsdom": "^29.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^4.9.4"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^4.20.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "@bufbuild/connect-web": "^0.5.0",
+    "@bufbuild/protobuf": "^1.0.0",
+    "@bufbuild/protoc-gen-connect-web": "^0.5.0",
+    "stable-hash": "^0.0.3"
   }
 }

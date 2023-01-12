@@ -12,19 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { DescFile, DescService } from "@bufbuild/protobuf";
-import { MethodKind } from "@bufbuild/protobuf";
-import type { Schema } from "@bufbuild/protoplugin";
-import { localName } from "@bufbuild/protoplugin/ecmascript";
-import type { PluginInit } from "./utils";
+import type { DescFile, DescService } from '@bufbuild/protobuf';
+import { MethodKind } from '@bufbuild/protobuf';
+import type { Schema } from '@bufbuild/protoplugin';
+import { localName } from '@bufbuild/protoplugin/ecmascript';
+
+import type { PluginInit } from './utils';
 
 /**
- * Handles generating a TypeScript Definition file for a given Schema, DescFile (protobuf definition) and protobuf Service.
+ * Handles generating a TypeScript Declaration file for a given Schema, DescFile (protobuf definition) and protobuf Service.
  */
-export const generateServiceFile =
+const generateServiceFile =
   (schema: Schema, protoFile: DescFile) => (service: DescService) => {
     const f = schema.generateFile(
-      `${protoFile.name}-${localName(service)}_connectquery.d.ts`
+      `${protoFile.name}-${localName(service)}_connectquery.d.ts`,
     );
 
     f.preamble(protoFile);
@@ -37,12 +38,12 @@ export const generateServiceFile =
               `export const `,
               localName(method),
               `: `,
-              f.import("UnaryHooks", "connect-query"),
+              f.import('UnaryHooks', '@bufbuild/connect-query'),
               `<`,
               method.input,
               `, `,
               method.output,
-              `>;`
+              `>;`,
             );
           }
           break;
@@ -56,10 +57,8 @@ export const generateServiceFile =
 /**
  * This function generates the TypeScript Definition output files
  */
-export const generateDts: PluginInit["generateDts"] = (schema) => {
-  schema.files
-    .filter((protoFile) => protoFile.services.length > 0)
-    .forEach((protoFile) => {
-      protoFile.services.forEach(generateServiceFile(schema, protoFile));
-    });
+export const generateDts: PluginInit['generateDts'] = (schema) => {
+  schema.files.forEach((protoFile) => {
+    protoFile.services.forEach(generateServiceFile(schema, protoFile));
+  });
 };

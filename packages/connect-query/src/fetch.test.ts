@@ -12,22 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { beforeAll, describe, expect, it } from "@jest/globals";
-import { unaryFetch } from "./fetch";
-import type { Equal, Expect } from "./jest/test-utils";
-import { hardcodedResponse, patchGlobalThisFetch } from "./jest/test-utils";
-import { ElizaService } from "./jest/mock-data/eliza/eliza_connectweb";
-import type { SayResponse } from "./jest/mock-data/eliza/eliza_pb";
-import { SayRequest } from "./jest/mock-data/eliza/eliza_pb";
-import { createConnectTransport } from "@bufbuild/connect-web";
+import { createConnectTransport } from '@bufbuild/connect-web';
+import { beforeAll, describe, expect, it } from '@jest/globals';
+import { ElizaService } from 'generated-react/dist/eliza_connectweb';
+import type { SayResponse } from 'generated-react/dist/eliza_pb';
+import { SayRequest } from 'generated-react/dist/eliza_pb';
 
-describe("unaryFetch", () => {
+import { unaryFetch } from './fetch';
+import type { Equal, Expect } from './jest/test-utils';
+import {
+  hardcodedResponse,
+  mockCallOptions,
+  mockTransportOption,
+  patchGlobalThisFetch,
+} from './jest/test-utils';
+
+describe('unaryFetch', () => {
   beforeAll(() => {
     patchGlobalThisFetch(hardcodedResponse);
   });
 
   const transport = createConnectTransport({
-    baseUrl: "",
+    baseUrl: '',
   });
 
   const fetchOptions = {
@@ -37,38 +43,75 @@ describe("unaryFetch", () => {
     typeName: ElizaService.typeName,
   }; // satisfies Parameters<typeof unaryFetch>[0];
 
-  it("has the correct return type", () => {
+  it('has the correct return type', () => {
     expect.assertions(0);
     const promise = unaryFetch(fetchOptions);
-    type typePromise = Expect<Equal<typeof promise, Promise<SayResponse>>>;
+    type ExpectType_Promise = Expect<
+      Equal<typeof promise, Promise<SayResponse>>
+    >;
   });
 
-  it("returns a message", async () => {
+  it('returns a message', async () => {
     const response = await unaryFetch(fetchOptions);
-    expect(response.toJSON()).toStrictEqual(hardcodedResponse);
+    expect(response.toJson()).toStrictEqual(hardcodedResponse);
   });
 
-  it("can handle empty inputs", async () => {
+  it('can handle empty inputs', async () => {
     const response = await unaryFetch({
       ...fetchOptions,
       input: undefined,
     });
-    expect(response.toJSON()).toStrictEqual(hardcodedResponse);
+    expect(response.toJson()).toStrictEqual(hardcodedResponse);
   });
 
-  it("is aware of AbortSignal signals", () => {
-    const callOptions = new AbortController();
+  it('is aware of AbortSignal signals', () => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises -- it is not necessary to await this promise
     unaryFetch({
       ...fetchOptions,
-      callOptions,
+      callOptions: mockCallOptions,
     });
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("eliza"),
+      expect.stringContaining('eliza'),
       expect.objectContaining({
-        signal: callOptions.signal,
-      })
+        signal: mockCallOptions.signal,
+      }),
+    );
+  });
+
+  it('is aware of timeoutMs callOption', () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- it is not necessary to await this promise
+    unaryFetch({
+      ...fetchOptions,
+      callOptions: { timeoutMs: mockCallOptions.timeoutMs },
+      transport: mockTransportOption,
+    });
+
+    expect(mockTransportOption.unary).toHaveBeenCalledWith(
+      expect.anything(), // service
+      expect.anything(), // method
+      undefined, // signal
+      mockCallOptions.timeoutMs, // timeoutMs
+      undefined, // headers
+      expect.anything(), // input
+    );
+  });
+
+  it('is aware of headers callOption', () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises -- it is not necessary to await this promise
+    unaryFetch({
+      ...fetchOptions,
+      callOptions: { headers: mockCallOptions.headers },
+      transport: mockTransportOption,
+    });
+
+    expect(mockTransportOption.unary).toHaveBeenCalledWith(
+      expect.anything(), // service
+      expect.anything(), // method
+      undefined, // signal
+      undefined, // timeoutMs
+      mockCallOptions.headers, // headers
+      expect.anything(), // input
     );
   });
 });

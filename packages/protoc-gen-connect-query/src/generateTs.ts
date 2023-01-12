@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { DescFile, DescService } from "@bufbuild/protobuf";
-import { MethodKind } from "@bufbuild/protobuf";
-import type { Schema } from "@bufbuild/protoplugin";
+import type { DescFile, DescService } from '@bufbuild/protobuf';
+import { MethodKind } from '@bufbuild/protobuf';
+import type { Schema } from '@bufbuild/protoplugin';
 import {
   literalString,
   localName,
   makeJsDoc,
-} from "@bufbuild/protoplugin/ecmascript";
-import type { PluginInit } from "./utils";
+} from '@bufbuild/protoplugin/ecmascript';
+
+import type { PluginInit } from './utils';
 
 /**
  * Handles generating a source code file for a given Schema, DescFile (protobuf definition) and protobuf Service.
@@ -28,10 +29,10 @@ import type { PluginInit } from "./utils";
  * By pure luck, this file happens to be completely valid JavaScript since all the types are inferred.
  */
 const generateServiceFile =
-  (schema: Schema, protoFile: DescFile, extension: "js" | "ts") =>
+  (schema: Schema, protoFile: DescFile, extension: 'js' | 'ts') =>
   (service: DescService) => {
     const f = schema.generateFile(
-      `${protoFile.name}-${localName(service)}_connectquery.${extension}`
+      `${protoFile.name}-${localName(service)}_connectquery.${extension}`,
     );
     f.preamble(protoFile);
 
@@ -46,8 +47,8 @@ const generateServiceFile =
         f.print(makeJsDoc(method));
         f.print(
           `export const ${localName(method)} = `,
-          f.import("createQueryService", "connect-query"),
-          `({`
+          f.import('createQueryService', '@bufbuild/connect-query'),
+          `({`,
         );
         f.print(`  service: {`);
         f.print(`    methods: {`);
@@ -56,7 +57,7 @@ const generateServiceFile =
         f.print(
           `        kind: `,
           rtMethodKind,
-          `.${MethodKind[method.methodKind]},`
+          `.${MethodKind[method.methodKind]},`,
         );
         f.print(`        I: `, method.input, `,`);
         f.print(`        O: `, method.output, `,`);
@@ -76,15 +77,13 @@ const generateServiceFile =
 /**
  * This function generates the TypeScript output files
  */
-export const generateTs: PluginInit["generateJs"] & PluginInit["generateTs"] = (
+export const generateTs: PluginInit['generateJs'] & PluginInit['generateTs'] = (
   schema,
-  extension
+  extension,
 ) => {
-  schema.files
-    .filter((protoFile) => protoFile.services.length > 0)
-    .forEach((protoFile) => {
-      protoFile.services.forEach(
-        generateServiceFile(schema, protoFile, extension)
-      );
-    });
+  schema.files.forEach((protoFile) => {
+    protoFile.services.forEach(
+      generateServiceFile(schema, protoFile, extension),
+    );
+  });
 };

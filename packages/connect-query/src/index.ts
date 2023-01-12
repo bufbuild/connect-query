@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export { createQueryService } from "./create-query-service";
+export { createQueryService } from './create-query-service';
 export type {
   QueryHooks,
   SupportedMethodInfo,
   IsSupportedMethod,
   SupportedMethodKinds,
-} from "./create-query-hooks";
+} from './create-query-hooks';
 export {
   createQueryHooks,
   supportedMethodKinds,
   isSupportedMethod,
-} from "./create-query-hooks";
-export type { ConnectQueryKey } from "./connect-query-key";
-export type { UnaryHooks } from "./unary-hooks";
-export { unaryHooks } from "./unary-hooks";
-export { disableQuery } from "./utils";
-export { useTransport, TransportProvider } from "./use-transport";
+} from './create-query-hooks';
+export type { ConnectQueryKey, ConnectPartialQueryKey } from './connect-query-key';
+export type { UnaryHooks } from './unary-hooks';
+export { unaryHooks } from './unary-hooks';
+export { disableQuery } from './utils';
+export { useTransport, TransportProvider } from './use-transport';

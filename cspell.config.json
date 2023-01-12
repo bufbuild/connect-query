@@ -1,21 +1,35 @@
 {
   "words": [
-    "Weizenbaum's",
+    "backoffs",
     "bufbuild",
     "connectquery",
     "connectweb",
+    "Deno",
     "descriptorset",
+    "excalidraw",
+    "idempotence",
     "idempotency",
     "inferencing",
+    "invalidators",
+    "keyof",
     "lcov",
     "nocheck",
-    "pregenerate",
+    "pnpm",
     "proto",
     "protobuf",
     "protoc",
+    "protofile",
     "protoplugin",
+    "Quickstart",
     "tanstack",
-    "tsdoc"
+    "todos",
+    "tsdoc",
+    "Vindaloo",
+    "Weizenbaum's"
   ],
-  "ignorePaths": ["**/*.svg", "**/*.ai"]
+  "ignorePaths": [
+    "**/*.svg",
+    "**/*.ai",
+    "**/pnpm-lock.yaml"
+  ]
 }

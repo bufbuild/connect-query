@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { Transport } from "@bufbuild/connect-web";
+import type { Transport } from '@bufbuild/connect-web';
 import type {
   Message,
   MethodInfo,
   MethodInfoUnary,
   ServiceType,
-} from "@bufbuild/protobuf";
-import { MethodKind } from "@bufbuild/protobuf";
+} from '@bufbuild/protobuf';
+import { MethodKind } from '@bufbuild/protobuf';
 
-import type { UnaryHooks } from "./unary-hooks";
-import { unaryHooks } from "./unary-hooks";
-import { unreachableCase } from "./utils";
+import type { UnaryHooks } from './unary-hooks';
+import { unaryHooks } from './unary-hooks';
+import { unreachableCase } from './utils';
 
 /**
  * This is an array of supported `MethodKind`s
@@ -41,7 +41,7 @@ export type SupportedMethodKinds = MethodKind.Unary;
  * Today, only Unary services are supported.
  */
 export const isSupportedMethod = <I extends Message<I>, O extends Message<O>>(
-  method: MethodInfo<I, O>
+  method: MethodInfo<I, O>,
 ): method is IsSupportedMethod<I, O> => {
   return supportedMethodKinds.includes(method.kind);
 };
@@ -51,7 +51,7 @@ export const isSupportedMethod = <I extends Message<I>, O extends Message<O>>(
  */
 export type IsSupportedMethod<
   I extends Message<I>,
-  O extends Message<O>
+  O extends Message<O>,
 > = MethodInfoUnary<I, O>;
 
 /** This explicitly states the `MethodKind`s that are supported by Connect-Query and provides a means to convert those kinds into the Hooks types (e.g. UnaryHooks) */
@@ -67,8 +67,8 @@ export interface SupportedMethodInfo<MI extends MethodInfo> {
 
 /** This is a helper for `QueryHooks` */
 type SupportedHooks<MI extends MethodInfo> =
-  MI["kind"] extends keyof SupportedMethodInfo<MI>
-    ? SupportedMethodInfo<MI>[MI["kind"]]
+  MI['kind'] extends keyof SupportedMethodInfo<MI>
+    ? SupportedMethodInfo<MI>[MI['kind']]
     : never;
 
 /**
@@ -79,10 +79,10 @@ type SupportedHooks<MI extends MethodInfo> =
  * Note: Today, only Unary method kinds are supported.
  */
 export type QueryHooks<Service extends ServiceType> = {
-  [Method in keyof Service["methods"] as Exclude<
+  [Method in keyof Service['methods'] as Exclude<
     Method,
-    keyof SupportedHooks<Service["methods"][Method]>
-  >]: SupportedHooks<Service["methods"][Method]>;
+    keyof SupportedHooks<Service['methods'][Method]>
+  >]: SupportedHooks<Service['methods'][Method]>;
 };
 
 /**
@@ -131,12 +131,12 @@ export const createQueryHooks = <Service extends ServiceType>({
               methodInfo,
               `unrecognized method kind: ${
                 (methodInfo as { kind: string }).kind
-              }`
-            )
+              }`,
+            ),
           );
           return accumulator;
       }
     },
     // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter -- making this change causes the wrong overload to be selected
-    {} as QueryHooks<Service>
+    {} as QueryHooks<Service>,
   );

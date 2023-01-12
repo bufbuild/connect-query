@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const { runNodeJs } = require("@bufbuild/protoplugin");
+const { runNodeJs } = require('@bufbuild/protoplugin');
 const {
   protocGenConnectQuery,
-} = require("../dist/cjs/src/protoc-gen-connect-query-plugin.js");
+} = require('../dist/cjs/src/protoc-gen-connect-query-plugin.js');
 
 runNodeJs(protocGenConnectQuery);

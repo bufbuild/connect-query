@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package buf.connect.demo.example.v1;
+
+message Empty {}
+
+// A Todo is a task to be completed
+message Todo {
+  // v4 UUID
+  string id = 1;
+  // the human readable label for the Todo
+  string name = 2;
+  // denotes whether the Todo has been completed
+  bool completed = 3;
+}
+
+message Todos {
+  // a list of Todos
+  repeated Todo todos = 1;
+}
+
+service TodoService {
+  // A helpful RPC to get all current Todos
+  rpc GetTodos(Empty) returns (Todos);
+  rpc AddTodo(Todo) returns (Todos);
+}

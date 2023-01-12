@@ -16,75 +16,76 @@ import type {
   AnyMessage,
   MethodInfoUnary,
   PartialMessage,
-} from "@bufbuild/protobuf";
-import { MethodKind } from "@bufbuild/protobuf";
-import { describe, expect, it, jest } from "@jest/globals";
-import { BigIntService } from "./jest/mock-data/eliza/eliza_connectweb";
-import type { CountResponse } from "./jest/mock-data/eliza/eliza_pb";
-import type { Equal, Expect } from "./jest/test-utils";
+} from '@bufbuild/protobuf';
+import { MethodKind } from '@bufbuild/protobuf';
+import { describe, expect, it, jest } from '@jest/globals';
+import { BigIntService } from 'generated-react/dist/eliza_connectweb';
+import type { CountResponse } from 'generated-react/dist/eliza_pb';
+
+import type { Equal, Expect } from './jest/test-utils';
 import {
   assert,
   isAbortController,
   isUnaryMethod,
   protobufSafeUpdater,
-} from "./utils";
+} from './utils';
 
-describe("isUnaryMethod", () => {
-  it("returns true for unary methods", () => {
+describe('isUnaryMethod', () => {
+  it('returns true for unary methods', () => {
     expect(
       isUnaryMethod({
         kind: MethodKind.BiDiStreaming,
-      } as unknown as MethodInfoUnary<AnyMessage, AnyMessage>)
+      } as unknown as MethodInfoUnary<AnyMessage, AnyMessage>),
     ).toBeFalsy();
     expect(
       isUnaryMethod({
         kind: MethodKind.ClientStreaming,
-      } as unknown as MethodInfoUnary<AnyMessage, AnyMessage>)
+      } as unknown as MethodInfoUnary<AnyMessage, AnyMessage>),
     ).toBeFalsy();
     expect(
       isUnaryMethod({
         kind: MethodKind.ServerStreaming,
-      } as unknown as MethodInfoUnary<AnyMessage, AnyMessage>)
+      } as unknown as MethodInfoUnary<AnyMessage, AnyMessage>),
     ).toBeFalsy();
   });
 
-  it("returns false for non-unary methods", () => {
+  it('returns false for non-unary methods', () => {
     expect(
       isUnaryMethod({
         kind: MethodKind.Unary,
-      } as unknown as MethodInfoUnary<AnyMessage, AnyMessage>)
+      } as unknown as MethodInfoUnary<AnyMessage, AnyMessage>),
     ).toBeTruthy();
   });
 });
 
-describe("assert", () => {
-  const message = "assertion message";
-  it("throws on a false condition", () => {
+describe('assert', () => {
+  const message = 'assertion message';
+  it('throws on a false condition', () => {
     expect(() => {
       assert(false, message);
     }).toThrow(`Invalid assertion: ${message}`);
   });
 
-  it("does not throw on a true condition", () => {
+  it('does not throw on a true condition', () => {
     expect(() => {
       assert(true, message);
     }).not.toThrow();
   });
 });
 
-describe("isAbortController", () => {
-  it("returns false for non-objects", () => {
+describe('isAbortController', () => {
+  it('returns false for non-objects', () => {
     expect(isAbortController(true)).toBeFalsy();
     expect(isAbortController(false)).toBeFalsy();
     expect(isAbortController(0)).toBeFalsy();
     expect(isAbortController(1)).toBeFalsy();
-    expect(isAbortController("a")).toBeFalsy();
+    expect(isAbortController('a')).toBeFalsy();
     expect(isAbortController(undefined)).toBeFalsy();
     expect(isAbortController([])).toBeFalsy();
     expect(isAbortController(null)).toBeFalsy();
   });
 
-  it("returns false for objects missing the AbortController properties", () => {
+  it('returns false for objects missing the AbortController properties', () => {
     expect(isAbortController({})).toBeFalsy();
     expect(isAbortController({ signal: undefined })).toBeFalsy();
     expect(isAbortController({ signal: null })).toBeFalsy();
@@ -92,25 +93,25 @@ describe("isAbortController", () => {
     expect(isAbortController({ signal: { aborted: undefined } })).toBeFalsy();
     expect(isAbortController({ signal: { aborted: true } })).toBeFalsy();
     expect(
-      isAbortController({ signal: { aborted: true }, abort: undefined })
+      isAbortController({ signal: { aborted: true }, abort: undefined }),
     ).toBeFalsy();
   });
 
-  it("returns true for the two necessary AbortController properties", () => {
+  it('returns true for the two necessary AbortController properties', () => {
     expect(
       isAbortController({
         signal: {
           aborted: false,
         },
         abort: () => {},
-      })
+      }),
     ).toBeTruthy();
 
     expect(isAbortController(new AbortController())).toBeTruthy();
   });
 });
 
-describe("protobufSafeUpdater", () => {
+describe('protobufSafeUpdater', () => {
   const { count: methodInfo } = BigIntService.methods;
   const input: PartialMessage<CountResponse> = {
     count: 1n,
@@ -122,48 +123,48 @@ describe("protobufSafeUpdater", () => {
   };
   const wrappedOutput = new methodInfo.O(output);
 
-  it("handles a PartialMessage updater", () => {
+  it('handles a PartialMessage updater', () => {
     const updater = output;
     const safeUpdater = protobufSafeUpdater(updater, methodInfo.O);
 
-    type typeUpdater = Expect<
+    type ExpectType_Updater = Expect<
       Equal<typeof safeUpdater, (prev?: CountResponse) => CountResponse>
     >;
-    expect(typeof safeUpdater).toStrictEqual("function");
+    expect(typeof safeUpdater).toStrictEqual('function');
 
     const result = safeUpdater(wrappedInput);
-    type typeResult = Expect<Equal<typeof result, CountResponse>>;
+    type ExpectType_Result = Expect<Equal<typeof result, CountResponse>>;
     expect(result).not.toStrictEqual(wrappedInput);
 
-    type typeBigInt = Expect<Equal<typeof result["count"], bigint>>;
-    expect(typeof result.count).toStrictEqual("bigint");
+    type ExpectType_BigInt = Expect<Equal<typeof result['count'], bigint>>;
+    expect(typeof result.count).toStrictEqual('bigint');
 
     expect(wrappedInput.count).toStrictEqual(1n);
     expect(result.count).toStrictEqual(2n);
     expect(result).toStrictEqual(wrappedOutput);
-    expect(result).toHaveProperty("clone");
+    expect(result).toHaveProperty('clone');
   });
 
-  it("handles a function updater", () => {
+  it('handles a function updater', () => {
     const updater = jest.fn(() => new methodInfo.O({ count: 2n }));
     const safeUpdater = protobufSafeUpdater(updater, methodInfo.O);
 
-    type typeUpdater = Expect<
+    type ExpectType_Updater = Expect<
       Equal<typeof safeUpdater, (prev?: CountResponse) => CountResponse>
     >;
-    expect(typeof safeUpdater).toStrictEqual("function");
+    expect(typeof safeUpdater).toStrictEqual('function');
 
     const result = safeUpdater(wrappedInput);
     expect(updater).toHaveBeenCalledWith(input);
-    type typeResult = Expect<Equal<typeof result, CountResponse>>;
+    type ExpectType_Result = Expect<Equal<typeof result, CountResponse>>;
     expect(result).not.toStrictEqual(wrappedInput);
 
-    type typeBigInt = Expect<Equal<typeof result["count"], bigint>>;
-    expect(typeof result.count).toStrictEqual("bigint");
+    type ExpectType_BigInt = Expect<Equal<typeof result['count'], bigint>>;
+    expect(typeof result.count).toStrictEqual('bigint');
 
     expect(wrappedInput.count).toStrictEqual(1n);
     expect(result.count).toStrictEqual(2n);
     expect(result).toStrictEqual(wrappedOutput);
-    expect(result).toHaveProperty("clone");
+    expect(result).toHaveProperty('clone');
   });
 });

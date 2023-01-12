@@ -12,39 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, expect, it } from "@jest/globals";
-import { makeConnectQueryKeyGetter } from "./connect-query-key";
-import { disableQuery } from "./utils";
+import { describe, expect, it } from '@jest/globals';
 
-describe("makeQueryKey", () => {
+import { makeConnectQueryKeyGetter } from './connect-query-key';
+import { disableQuery } from './utils';
+
+describe('makeQueryKey', () => {
   const queryKey = makeConnectQueryKeyGetter(
-    "service.typeName",
-    "methodInfo.name"
+    'service.typeName',
+    'methodInfo.name',
   );
 
-  it("makes a query key with input", () => {
-    const key = queryKey({ value: "someValue" });
+  it('makes a query key with input', () => {
+    const key = queryKey({ value: 'someValue' });
     expect(key).toStrictEqual([
-      "service.typeName",
-      "methodInfo.name",
-      { value: "someValue" },
+      'service.typeName',
+      'methodInfo.name',
+      { value: 'someValue' },
     ]);
   });
 
-  it("allows empty inputs", () => {
+  it('allows empty inputs', () => {
     const key = queryKey();
     expect(key).toStrictEqual([
-      "service.typeName",
-      "methodInfo.name",
+      'service.typeName',
+      'methodInfo.name',
       {}, // TODO(paul) is it better to have an empty object or have nothing?  the original implementation had an empty object
     ]);
   });
 
-  it("makes a query key with a disabled input", () => {
+  it('makes a query key with a disabled input', () => {
     const key = queryKey(disableQuery);
     expect(key).toStrictEqual([
-      "service.typeName",
-      "methodInfo.name",
+      'service.typeName',
+      'methodInfo.name',
       {}, // TODO(paul) is it better to have an empty object or have nothing?  the original implementation had an empty object
     ]);
   });

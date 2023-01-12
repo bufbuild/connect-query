@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { CallOptions, Transport } from "@bufbuild/connect-web";
+import type { CallOptions, Transport } from '@bufbuild/connect-web';
 import type {
   Message,
   MethodInfo,
   PartialMessage,
   ServiceType,
-} from "@bufbuild/protobuf";
+} from '@bufbuild/protobuf';
 
 /**
  * This helper "puts all the pieces" together to make an actual network request for a unary method.
@@ -34,15 +34,15 @@ export const unaryFetch = async <I extends Message<I>, O extends Message<O>>({
   input?: PartialMessage<I> | undefined;
   methodInfo: MethodInfo<I, O>;
   transport: Transport;
-  typeName: ServiceType["typeName"];
+  typeName: ServiceType['typeName'];
 }) => {
   const response = await transport.unary<I, O>(
     { typeName, methods: {} }, // https://github.com/bufbuild/connect-web/pull/318
     methodInfo,
     callOptions?.signal,
-    undefined,
-    undefined,
-    input
+    callOptions?.timeoutMs,
+    callOptions?.headers,
+    input,
   );
   return response.message;
 };

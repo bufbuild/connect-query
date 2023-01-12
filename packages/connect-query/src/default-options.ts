@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import stableHash from "stable-hash";
-import type { DefaultOptions } from "@tanstack/react-query";
+import type { DefaultOptions } from '@tanstack/react-query';
+import stableHash from 'stable-hash';
 
 /**
  * These default options are required for proper query key hashing.

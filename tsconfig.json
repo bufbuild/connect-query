@@ -10,5 +10,6 @@
     "**/*.test.tsx",
     ".eslintrc.js",
     "jest-preset.js"
-  ]
+  ],
+  "exclude": ["**/dist"]
 }

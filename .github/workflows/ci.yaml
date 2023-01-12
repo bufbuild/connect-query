@@ -20,19 +20,30 @@ jobs:
       - name: Checkout branch
         uses: actions/checkout@v3
 
+      - name: Setup `buf` CLI
+        uses: bufbuild/buf-setup-action@v1.10.0
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install
-        run: npm ci
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 7
+
+      - name: Install dependencies
+        run: pnpm install
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
-      - name: Test
-        run: npm run test
+      - name: Generate
+        run: pnpm run generate
 
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
+
+      - name: Test
+        run: pnpm run test

@@ -17,48 +17,49 @@ import type {
   MethodInfo,
   PartialMessage,
   ServiceType,
-} from "@bufbuild/protobuf";
-import type { DisableQuery } from "./utils";
-import { disableQuery } from "./utils";
+} from '@bufbuild/protobuf';
+
+import type { DisableQuery } from './utils';
+import { disableQuery } from './utils';
 
 /**
  * TanStack Query requires query keys in order to decide when the query should automatically update.
- *
+ * 
  * `QueryKey`s in TanStack Query are usually arbitrary, but Connect-Query uses the approach of creating a query key that begins with the least specific information: the service's `typeName`, followed by the method name, and ending with the most specific information to identify a particular request: the input message itself.
- *
+ * 
  * For example, for a query key might look like this:
- *
+ * 
  * @example
  * [
- *     "buf.connect.demo.eliza.v1.ElizaService",
- *     "Say",
- *     { sentence: "hello there" },
+ *   "buf.connect.demo.eliza.v1.ElizaService",
+ *   "Say",
+ *   { sentence: "hello there" },
  * ]
  */
 export type ConnectQueryKey<I extends Message<I>> = [
   serviceTypeName: string,
   methodName: string,
-  input: PartialMessage<I>
+  input: PartialMessage<I>,
 ];
 
 /**
- * In situations where you want to use partial matching for TanStack Query `queryKey`s
+ * This type is useful in situations where you want to use partial matching for TanStack Query `queryKey`s
  */
 export type ConnectPartialQueryKey = [
   serviceTypeName: string,
-  methodName: string
+  methodName: string,
 ];
 
 /**
  * TanStack Query requires query keys in order to decide when the query should automatically update.
- *
+ * 
  * In Connect-Query, much of this is handled automatically by this function.
- *
+ * 
  * @see ConnectQueryKey for information on the components of Connect-Query's keys.
  */
 export const makeConnectQueryKeyGetter =
-  (typeName: ServiceType["typeName"], methodInfoName: MethodInfo["name"]) =>
+  (typeName: ServiceType['typeName'], methodInfoName: MethodInfo['name']) =>
   <I extends Message<I>>(
-    input?: DisableQuery | PartialMessage<I> | undefined
+    input?: DisableQuery | PartialMessage<I> | undefined,
   ): ConnectQueryKey<I> =>
     [typeName, methodInfoName, input === disableQuery || !input ? {} : input];

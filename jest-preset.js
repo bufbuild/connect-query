@@ -15,8 +15,8 @@
 /** @type {import('jest').Config} */
 module.exports = {
   collectCoverage: true,
-  coverageReporters: ["json", "lcov", "text", "clover", "text-summary"],
-  coveragePathIgnorePatterns: ["src/jest"],
+  coverageReporters: ['json', 'lcov', 'text', 'clover', 'text-summary'],
+  coveragePathIgnorePatterns: ['src/jest'],
   coverageThreshold: {
     global: {
       branches: 100,
@@ -31,8 +31,8 @@ module.exports = {
     printBasicPrototype: false,
   },
   transform: {
-    "^.+\\.(ts|tsx)$": [
-      "ts-jest",
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
       {
         isolatedModules: false,
         diagnostics: {

@@ -12,17 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { Transport } from "@bufbuild/connect-web";
-import { createConnectTransport } from "@bufbuild/connect-web";
-import type { FC, PropsWithChildren } from "react";
-import { createContext, useContext } from "react";
+import type { Transport } from '@bufbuild/connect-web';
+import { ConnectError } from '@bufbuild/connect-web';
+import type { FC, PropsWithChildren } from 'react';
+import { createContext, useContext } from 'react';
 
-const transportContext = createContext(
-  createConnectTransport({
-    // TODO, should this be initialized to null instead of a useless transport (where, I'm assuming that baseUrl being empty makes it useless)?
-    baseUrl: "",
-  })
+const fallbackTransportError = new ConnectError(
+  "To use Connect, you must provide a `Transport`: a simple object that handles `unary` and `serverStream` requests. `Transport` objects can easily be created by using `@bufbuild/connect-web`'s exports `createConnectTransport` and `createGrpcWebTransport`. see: https://connect.build/docs/web/getting-started for more info.",
 );
+
+export const fallbackTransport: Transport = {
+  unary: () => {
+    throw fallbackTransportError;
+  },
+  serverStream: () => {
+    throw fallbackTransportError;
+  },
+};
+
+const transportContext = createContext(fallbackTransport);
 
 /**
  * Use this helper to get the default transport that's currently attached to the React context for the calling component.
@@ -33,6 +41,7 @@ export const useTransport = () => useContext(transportContext);
  * `TransportProvider` is the main mechanism by which Connect-Query keeps track of the `Transport` used by your application.
  *
  * Broadly speaking, "transport" joins two concepts:
+ *
  *   1. The protocol of communication.  For this there are two options: the {@link https://connect.build/docs/protocol/ Connect Protocol}, or the {@link https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md gRPC-Web Protocol}.
  *   1. The protocol options.  The primary important piece of information here is the `baseUrl`, but there are also other potentially critical options like request credentials and binary wire format encoding options.
  *
@@ -44,7 +53,7 @@ export const useTransport = () => useContext(transportContext);
  *
  * @example
  * import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
- * import { TransportProvider } from "connect-query";
+ * import { TransportProvider } from "@bufbuild/connect-query";
  *
  * const queryClient = new QueryClient();
  *

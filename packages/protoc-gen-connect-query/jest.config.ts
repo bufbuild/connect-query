@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { Config } from "jest";
+import type { Config } from 'jest';
 
 const config: Config = {
-  preset: "../../jest-preset.js",
-  testEnvironment: "node",
-  testMatch: ["<rootDir>/**/*.test.ts?(x)"],
+  preset: '../../jest-preset.js',
+  testEnvironment: 'node',
+  testMatch: ['<rootDir>/**/*.test.ts?(x)'],
 };
 
 export default config;

@@ -1,8 +1,5 @@
+pnpm-lock.yaml
+
+examples/react/*/dist
 packages/*/dist
 packages/*/coverage
-
-packages/connect-query/src/jest/mock-data
-
-packages/protoc-gen-connect-query/gen
-
-packages/example/src/eliza

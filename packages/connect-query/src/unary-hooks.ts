@@ -12,37 +12,69 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { ConnectError, Transport } from "@bufbuild/connect-web";
+import type {
+  CallOptions,
+  ConnectError,
+  Transport,
+} from '@bufbuild/connect-web';
 import type {
   Message,
   MethodInfoUnary,
   PartialMessage,
   PlainMessage,
   ServiceType,
-} from "@bufbuild/protobuf";
+} from '@bufbuild/protobuf';
 import type {
   GetNextPageParamFunction,
   QueryFunctionContext,
-} from "@tanstack/react-query";
-import { unaryFetch } from "./fetch";
+} from '@tanstack/react-query';
+
 import type {
   ConnectPartialQueryKey,
   ConnectQueryKey,
-} from "./connect-query-key";
-import { makeConnectQueryKeyGetter } from "./connect-query-key";
-import { useTransport } from "./use-transport";
-import type { DisableQuery } from "./utils";
-import { protobufSafeUpdater } from "./utils";
-import { assert, disableQuery, isUnaryMethod, unreachableCase } from "./utils";
+} from './connect-query-key';
+import { makeConnectQueryKeyGetter } from './connect-query-key';
+import { unaryFetch } from './fetch';
+import { useTransport } from './use-transport';
+import type { DisableQuery } from './utils';
+import {
+  assert,
+  disableQuery,
+  isUnaryMethod,
+  protobufSafeUpdater,
+  unreachableCase,
+} from './utils';
 
 /**
  * The set of data and hooks that a unary method supports.
  */
 export interface UnaryHooks<I extends Message<I>, O extends Message<O>> {
   /**
-   * Use this to create a data object that can be used as placeholderData or initialData.
+   * Use this to create a data object that can be used as `placeholderData` or `initialData`.
    */
   createData: (data: PartialMessage<O>) => O;
+
+  /**
+   * createUseQueryOptions is intended to be used with `useQuery`, but is not a hook.  Since hooks cannot be called conditionally (or in loops), it can sometimes be helpful to use `createUseQueryOptions` to prepare an input to TanStack's `useQuery` API.
+   *
+   * The caveat being that if you go the route of using `createUseQueryOptions` you must provide transport.  You can get transport from the `useTransport` export.  If you cannot use hooks to retrieve transport, then look at the documentation for `TransportProvider` to learn more about how to use Connect-Web's createConnectTransport` or `createGrpcWebTransport`APIs.
+   */
+  createUseQueryOptions: (
+    input: DisableQuery | PartialMessage<I> | undefined,
+    options: {
+      getPlaceholderData?: (enabled: boolean) => PartialMessage<O> | undefined;
+
+      onError?: (error: ConnectError) => void;
+      transport: Transport;
+      callOptions?: CallOptions | undefined;
+    },
+  ) => {
+    enabled: boolean;
+    queryKey: ConnectQueryKey<I>;
+    queryFn: (context?: QueryFunctionContext<ConnectQueryKey<I>>) => Promise<O>;
+    placeholderData?: () => O;
+    onError?: (error: ConnectError) => void;
+  };
 
   /**
    * This helper is useful for getting query keys matching a wider set of queries associated to this Connect `Service`, per TanStack Query's partial matching mechanism.
@@ -65,14 +97,14 @@ export interface UnaryHooks<I extends Message<I>, O extends Message<O>> {
    */
   setQueryData: (
     updater: PartialMessage<O> | ((prev?: O) => PartialMessage<O>),
-    input?: PartialMessage<I>
+    input?: PartialMessage<I>,
   ) => [queryKey: ConnectQueryKey<I>, updater: (prev?: O) => O | undefined];
 
   /**
    * This helper is intended to be used with `QueryClient`s `setQueriesData` function.
    */
   setQueriesData: (
-    updater: PartialMessage<O> | ((prev?: O) => PartialMessage<O>)
+    updater: PartialMessage<O> | ((prev?: O) => PartialMessage<O>),
   ) => [queryKey: ConnectPartialQueryKey, updater: (prev?: O) => O | undefined];
 
   /**
@@ -83,8 +115,11 @@ export interface UnaryHooks<I extends Message<I>, O extends Message<O>> {
     options: {
       pageParamKey: ParamKey;
       getNextPageParam: (lastPage: O, allPages: O[]) => unknown;
+
       onError?: (error: ConnectError) => void;
-    }
+      transport?: Transport | undefined;
+      callOptions?: CallOptions | undefined;
+    },
   ) => {
     enabled: boolean;
     queryKey: ConnectQueryKey<I>;
@@ -92,7 +127,7 @@ export interface UnaryHooks<I extends Message<I>, O extends Message<O>> {
       context: QueryFunctionContext<
         ConnectQueryKey<I>,
         PlainMessage<I>[ParamKey]
-      >
+      >,
     ) => Promise<O>;
     getNextPageParam: GetNextPageParamFunction<O>;
     onError?: (error: ConnectError) => void;
@@ -101,11 +136,16 @@ export interface UnaryHooks<I extends Message<I>, O extends Message<O>> {
   /**
    * This function is intended to be used with TanStack Query's `useMutation` API.
    */
-  useMutation: () => {
+  useMutation: (options?: {
+    onError?: (error: ConnectError) => void;
+    transport?: Transport | undefined;
+    callOptions?: CallOptions | undefined;
+  }) => {
     mutationFn: (
-      input?: PartialMessage<I>,
-      context?: QueryFunctionContext<ConnectQueryKey<I>>
+      input: PartialMessage<I>,
+      context?: QueryFunctionContext<ConnectQueryKey<I>>,
     ) => Promise<O>;
+    onError?: (error: ConnectError) => void;
   };
 
   /**
@@ -114,14 +154,17 @@ export interface UnaryHooks<I extends Message<I>, O extends Message<O>> {
   useQuery: (
     input?: DisableQuery | PartialMessage<I>,
     options?: {
-      getPlaceholderData?: () => PartialMessage<O>;
+      getPlaceholderData?: (enabled: boolean) => PartialMessage<O> | undefined;
+
       onError?: (error: ConnectError) => void;
-    }
+      transport?: Transport | undefined;
+      callOptions?: CallOptions | undefined;
+    },
   ) => {
     enabled: boolean;
     queryKey: ConnectQueryKey<I>;
     queryFn: (context?: QueryFunctionContext<ConnectQueryKey<I>>) => Promise<O>;
-    getPlaceholderData?: () => Message<O>;
+    placeholderData?: () => O;
     onError?: (error: ConnectError) => void;
   };
 }
@@ -132,10 +175,10 @@ export interface UnaryHooks<I extends Message<I>, O extends Message<O>> {
 export const unaryHooks = <I extends Message<I>, O extends Message<O>>({
   methodInfo,
   typeName,
-  transport: customTransport,
+  transport: topLevelCustomTransport,
 }: {
   methodInfo: MethodInfoUnary<I, O>;
-  typeName: ServiceType["typeName"];
+  typeName: ServiceType['typeName'];
   transport?: Transport | undefined;
 }): UnaryHooks<I, O> => {
   if (!isUnaryMethod(methodInfo)) {
@@ -143,14 +186,54 @@ export const unaryHooks = <I extends Message<I>, O extends Message<O>>({
       methodInfo,
       `unaryHooks was passed a non unary method, ${
         (methodInfo as { name: string }).name
-      }`
+      }`,
     );
   }
 
   const getQueryKey = makeConnectQueryKeyGetter(typeName, methodInfo.name);
 
+  const createUseQueryOptions: UnaryHooks<I, O>['createUseQueryOptions'] = (
+    input,
+    { callOptions, getPlaceholderData, onError, transport },
+  ) => {
+    const enabled = input !== disableQuery;
+
+    assert(
+      transport !== undefined, // eslint-disable-line @typescript-eslint/no-unnecessary-condition -- yes, it's true that according to the types it should not be possible for a user to pass `undefined` for transport, but it's much nicer to catch them here if they do (as in, without TypeScript or in a insufficiently sound TypeScript configuration).
+      'createUseQueryOptions requires you to provide a Transport.  If you want automatic inference of Transport, try using the useQuery helper.',
+    );
+
+    return {
+      enabled,
+
+      ...(getPlaceholderData
+        ? {
+            placeholderData: () =>
+              new methodInfo.O(getPlaceholderData(enabled)),
+          }
+        : {}),
+
+      queryFn: async (context) => {
+        assert(enabled, 'queryFn does not accept a disabled query');
+        return unaryFetch({
+          callOptions: callOptions ?? context,
+          input,
+          methodInfo,
+          transport,
+          typeName,
+        });
+      },
+
+      queryKey: getQueryKey(input),
+
+      ...(onError ? { onError } : {}),
+    };
+  };
+
   return {
     createData: (input) => new methodInfo.O(input),
+
+    createUseQueryOptions,
 
     getPartialQueryKey: () => [typeName, methodInfo.name],
 
@@ -168,72 +251,36 @@ export const unaryHooks = <I extends Message<I>, O extends Message<O>>({
       protobufSafeUpdater(updater, methodInfo.O),
     ],
 
-    useInfiniteQuery: (input, options) => {
-      const transport = useTransport();
+    useInfiniteQuery: (
+      input,
+      {
+        transport: optionsTransport,
+        getNextPageParam,
+        pageParamKey,
+        onError,
+        callOptions,
+      },
+    ) => {
+      const contextTransport = useTransport();
+      const transport =
+        optionsTransport ?? topLevelCustomTransport ?? contextTransport;
       return {
         enabled: input !== disableQuery,
 
-        getNextPageParam: options.getNextPageParam,
+        getNextPageParam,
 
         queryFn: async (context) => {
           assert(
             input !== disableQuery,
-            "queryFn does not accept a disabled query"
+            'queryFn does not accept a disabled query',
           );
 
           return unaryFetch({
-            callOptions: context,
+            callOptions: callOptions ?? context,
             input: {
               ...input,
-              [options.pageParamKey]: context.pageParam,
+              [pageParamKey]: context.pageParam,
             },
-            methodInfo,
-            transport,
-            typeName,
-          });
-        },
-
-        queryKey: getQueryKey(input),
-
-        ...(options.onError ? { onError: options.onError } : {}),
-      };
-    },
-
-    useMutation: () => {
-      const transport = useTransport();
-
-      return {
-        mutationFn: async (input, context) =>
-          unaryFetch({
-            callOptions: context,
-            input,
-            methodInfo,
-            transport,
-            typeName,
-          }),
-      };
-    },
-
-    useQuery: (input, { getPlaceholderData, onError } = {}) => {
-      const contextTransport = useTransport();
-      const transport = customTransport ?? contextTransport;
-      return {
-        enabled: input !== disableQuery,
-
-        ...(getPlaceholderData
-          ? {
-              getPlaceholderData: () => new methodInfo.O(getPlaceholderData()),
-            }
-          : {}),
-
-        queryFn: async (context) => {
-          assert(
-            input !== disableQuery,
-            "queryFn does not accept a disabled query"
-          );
-          return unaryFetch({
-            callOptions: context,
-            input,
             methodInfo,
             transport,
             typeName,
@@ -244,6 +291,39 @@ export const unaryHooks = <I extends Message<I>, O extends Message<O>>({
 
         ...(onError ? { onError } : {}),
       };
+    },
+
+    useMutation: ({
+      transport: optionsTransport,
+      callOptions,
+      onError,
+    } = {}) => {
+      const contextTransport = useTransport();
+      const transport =
+        optionsTransport ?? topLevelCustomTransport ?? contextTransport;
+
+      return {
+        mutationFn: async (input, context) =>
+          unaryFetch({
+            callOptions: callOptions ?? context,
+            input,
+            methodInfo,
+            transport,
+            typeName,
+          }),
+        ...(onError ? { onError } : {}),
+      };
+    },
+
+    useQuery: (input, options = {}) => {
+      const contextTransport = useTransport();
+      const transport =
+        options.transport ?? topLevelCustomTransport ?? contextTransport;
+
+      return createUseQueryOptions(input, {
+        ...options,
+        transport,
+      });
     },
   };
 };

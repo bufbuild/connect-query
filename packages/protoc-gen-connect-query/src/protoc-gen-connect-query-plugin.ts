@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { createEcmaScriptPlugin } from "@bufbuild/protoplugin";
-import { version } from "../package.json";
-import { generateTs } from "./generateTs";
-import { generateDts } from "./generateDts";
+import { createEcmaScriptPlugin } from '@bufbuild/protoplugin';
+
+import { version } from '../package.json';
+import { generateDts } from './generateDts';
+import { generateTs } from './generateTs';
 
 export const protocGenConnectQuery = createEcmaScriptPlugin({
-  name: "protoc-gen-connect-query",
+  name: 'protoc-gen-connect-query',
   version: `v${String(version)}`,
   generateTs,
 

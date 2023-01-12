@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { Transport } from "@bufbuild/connect-web";
-import type { ServiceType } from "@bufbuild/protobuf";
-import type { QueryHooks } from "./create-query-hooks";
-import { createQueryHooks } from "./create-query-hooks";
+import type { Transport } from '@bufbuild/connect-web';
+import type { ServiceType } from '@bufbuild/protobuf';
+
+import type { QueryHooks } from './create-query-hooks';
+import { createQueryHooks } from './create-query-hooks';
 
 const servicesToHooks = new Map<ServiceType, QueryHooks<ServiceType>>();
 
 /**
- * This is the main entrypoint for Connect-Query.
+ * `createQueryService` is the main entrypoint for Connect-Query.
  *
  * Pass in a service and you will receive an object with properties for each of your services and values that provide hooks for those services that you can then give to Tanstack Query.  The `ServiceType` TypeScript interface is provided by Protobuf-ES (`@bufbuild/protobuf`) while generated service definitions are provided by Connect-Web (`@bufbuild/connect-web`).
  *
@@ -44,9 +45,7 @@ const servicesToHooks = new Map<ServiceType, QueryHooks<ServiceType>>();
  *   },
  * });
  *
- * ......
- *
- * const { data, isLoading, etc.. } = useQuery(say.useQuery());
+ * const { data, isLoading, ...etc } = useQuery(say.useQuery());
  */
 export const createQueryService = <Service extends ServiceType>({
   service,

@@ -4,9 +4,6 @@
   "compilerOptions": {
     "outDir": "dist/cjs",
     "module": "CommonJS",
-    "resolveJsonModule": true,
-    "paths": {
-      "connect-query": ["../connect-query"]
-    }
+    "resolveJsonModule": true
   }
 }

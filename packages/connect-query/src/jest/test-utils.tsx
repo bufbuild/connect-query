@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { createConnectTransport } from "@bufbuild/connect-web";
-import { jest } from "@jest/globals";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { QueryClientConfig } from "@tanstack/react-query";
-import type { JSXElementConstructor, PropsWithChildren } from "react";
-import { TransportProvider } from "../use-transport";
+import type { Transport } from '@bufbuild/connect-web';
+import { createConnectTransport } from '@bufbuild/connect-web';
+import { jest } from '@jest/globals';
+import type { QueryClientConfig } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { JSXElementConstructor, PropsWithChildren } from 'react';
+
+import { TransportProvider } from '../use-transport';
 
 /**
  * in these tests, `globalThis.fetch` has been manually mocked by `patchGlobThisFetch` to always respond with this response.
  */
-export const hardcodedResponse = { sentence: "success" };
+export const hardcodedResponse = { sentence: 'success' };
 
 /**
  * This test-only helper patches `globalThis.fetch` to always return the same hardcoded response, irrespective of the inputs.
@@ -30,18 +32,18 @@ export const hardcodedResponse = { sentence: "success" };
  * If you pass a non-function as the mockValue, any call to `globalThis.fetch` will indiscriminately return that value.  However, if you pass a function, that function will be called on the input to `globalThis.fetch` (to be exact, the second argument: the one that contains the data).  That function's output will then be the return value of any calls to `globalThis.fetch` with the same input.
  */
 export const patchGlobalThisFetch = <T,>(
-  mockValue: T extends (...args: unknown[]) => infer U ? U : T
+  mockValue: T extends (...args: unknown[]) => infer U ? U : T,
 ) => {
   globalThis.fetch = jest.fn<typeof globalThis.fetch>(
     async (_, init = { body: null }) =>
       Promise.resolve({
         json: async () =>
           Promise.resolve(
-            typeof mockValue === "function" ? mockValue(init.body) : mockValue
+            typeof mockValue === 'function' ? mockValue(init.body) : mockValue,
           ),
-        headers: new Headers({ "content-type": "application/json" }),
+        headers: new Headers({ 'content-type': 'application/json' }),
         status: 200,
-      } as Response)
+      } as Response),
   );
 };
 
@@ -49,7 +51,10 @@ export const patchGlobalThisFetch = <T,>(
  * A utils wrapper that supplies Tanstack Query's `QueryClientProvider` as well as Connect-Query's `TransportProvider`.
  */
 export const wrapper = (
-  config?: QueryClientConfig
+  config?: QueryClientConfig,
+  transport = createConnectTransport({
+    baseUrl: 'https://demo.connect.build',
+  }),
 ): {
   wrapper: JSXElementConstructor<PropsWithChildren>;
   queryClient: QueryClient;
@@ -57,11 +62,7 @@ export const wrapper = (
   const queryClient = new QueryClient(config);
   return {
     wrapper: ({ children }) => (
-      <TransportProvider
-        transport={createConnectTransport({
-          baseUrl: "https://demo.connect.build",
-        })}
-      >
+      <TransportProvider transport={transport}>
         <QueryClientProvider client={queryClient}>
           {children}
         </QueryClientProvider>
@@ -75,7 +76,7 @@ export const wrapper = (
  * Asserts X and Y are equal
  */
 export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
-  T
+  T,
 >() => T extends Y ? 1 : 2
   ? true
   : false;
@@ -121,3 +122,29 @@ export const sleep = async (timeout: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
+
+/** this mock is intended to be passed to useContext */
+export const mockTransportContext = {
+  unary: jest.fn().mockImplementation(() => ({ message: hardcodedResponse })),
+  serverStream: jest.fn(),
+} as Transport;
+
+/** this mock is intended to be passed to a top level helper like `unaryHooks` */
+export const mockTransportTopLevel = {
+  unary: jest.fn().mockImplementation(() => ({ message: hardcodedResponse })),
+  serverStream: jest.fn(),
+} as Transport;
+
+/** this mock is intended to be passed directly to a helper like `useQuery` */
+export const mockTransportOption = {
+  unary: jest.fn().mockImplementation(() => ({ message: hardcodedResponse })),
+  serverStream: jest.fn(),
+} as Transport;
+
+export const mockCallOptions = {
+  signal: new AbortController().signal,
+  timeoutMs: 9000,
+  headers: new Headers({
+    'Content-Type': 'application/x-shockwave-flash; version="1"',
+  }),
+}; // satisfies CallOptions;

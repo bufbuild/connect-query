@@ -12,8 +12,12 @@ MD004:
   style: dash
 
 # MD013 - Line length
-# We do not want to artificially limit line lengh in a language like markdown because of the nature of the language's handling of whitespace.  Line wrapping is just a fact of life in markdown and trying to impose the conventions of other languages on markdown is an impedance mismatch that leads to people thinking that whitespace in markdown is more representative of the rendered HTML than it really is.
+# We do not want to artificially limit line length in a language like markdown because of the nature of the language's handling of whitespace.  Line wrapping is just a fact of life in markdown and trying to impose the conventions of other languages on markdown is an impedance mismatch that leads to people thinking that whitespace in markdown is more representative of the rendered HTML than it really is.
 MD013: false
+
+# MD025 - Multiple top-level headings in the same document
+# Although this rule is great in spirit, the rendered on markdown for such a large root readme simply (visually) requires multiple `h1`s as to decrease one level of nesting so horizontal dividers are easier to see and headings are larger.
+MD025: false
 
 # MD029 - Ordered list item prefix
 # Plain and simple, markdown parsers do not respect the numbering you use for ordered lists.  It only leads to confusion and misconception to allow otherwise.

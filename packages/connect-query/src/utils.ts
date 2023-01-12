@@ -18,13 +18,13 @@ import type {
   MethodInfo,
   MethodInfoUnary,
   PartialMessage,
-} from "@bufbuild/protobuf";
-import { MethodKind } from "@bufbuild/protobuf";
+} from '@bufbuild/protobuf';
+import { MethodKind } from '@bufbuild/protobuf';
 
 /**
  * Pass this value as an input to signal that you want to disable the query.
  */
-export const disableQuery = Symbol("disableQuery");
+export const disableQuery = Symbol('disableQuery');
 
 /**
  * Use this type in situations where you want to disable a query from use.
@@ -45,15 +45,15 @@ export function assert(condition: boolean, message: string): asserts condition {
  */
 export const isAbortController = (input: unknown): input is AbortController => {
   if (
-    typeof input === "object" &&
+    typeof input === 'object' &&
     input !== null &&
-    "signal" in input &&
-    typeof input.signal === "object" &&
+    'signal' in input &&
+    typeof input.signal === 'object' &&
     input.signal !== null &&
-    "aborted" in input.signal &&
-    typeof input.signal.aborted === "boolean" &&
-    "abort" in input &&
-    typeof input.abort === "function"
+    'aborted' in input.signal &&
+    typeof input.signal.aborted === 'boolean' &&
+    'abort' in input &&
+    typeof input.abort === 'function'
     // note, there are more things in this interface, but I stop the check here at `context.signal.aborted` and `context.abort` because (as off November 2022) that's all that connect-web is using (in `callback-client.ts`).
   ) {
     return true;
@@ -65,7 +65,7 @@ export const isAbortController = (input: unknown): input is AbortController => {
  * Type guards that the given method is a unary method
  */
 export const isUnaryMethod = <I extends Message<I>, O extends Message<O>>(
-  methodInfo: MethodInfo<I, O>
+  methodInfo: MethodInfo<I, O>,
 ): methodInfo is MethodInfoUnary<I, O> => methodInfo.kind === MethodKind.Unary;
 
 /**
@@ -87,7 +87,7 @@ type ConnectUpdater<O extends Message<O>> =
 export const protobufSafeUpdater =
   <O extends Message<O>>(updater: ConnectUpdater<O>, Output: MessageType<O>) =>
   (prev?: O): O => {
-    if (typeof updater === "function") {
+    if (typeof updater === 'function') {
       return new Output(updater(prev));
     }
 

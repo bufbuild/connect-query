@@ -1,0 +1,12 @@
+:root {
+  font-family: Inter, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  background-color: #f5f7fa;
+}
+
+body {
+  margin: 0;
+  display: flex;
+}

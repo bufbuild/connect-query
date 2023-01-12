@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import type { createEcmaScriptPlugin } from "@bufbuild/protoplugin";
+import type { createEcmaScriptPlugin } from '@bufbuild/protoplugin';
 
 /**
  * Extracts the type of PluginInit from @bufbuild/protoplugin

@@ -12,115 +12,117 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { describe, expect, it, jest } from "@jest/globals";
-import { createQueryHooks, isSupportedMethod } from "./create-query-hooks";
-import { ElizaService } from "./jest/mock-data/eliza/eliza_connectweb";
 import type {
   MethodInfo,
   MethodInfoUnary,
   PartialMessage,
   ServiceType,
-} from "@bufbuild/protobuf";
-import { MethodKind } from "@bufbuild/protobuf";
-import type { Alike, Equal, Expect, ExpectFalse } from "./jest/test-utils";
-import type { SayRequest } from "./jest/mock-data/eliza/eliza_pb";
-import type { SayResponse } from "./jest/mock-data/eliza/eliza_pb";
-import type { ConnectQueryKey } from "./connect-query-key";
-import type { DisableQuery } from "./utils";
-import type { UnaryHooks } from "./unary-hooks";
+} from '@bufbuild/protobuf';
+import { MethodKind } from '@bufbuild/protobuf';
+import { describe, expect, it, jest } from '@jest/globals';
+import { ElizaService } from 'generated-react/dist/eliza_connectweb';
+import type { SayRequest, SayResponse } from 'generated-react/dist/eliza_pb';
 
-describe("isSupportedMethod", () => {
+import type { ConnectQueryKey } from './connect-query-key';
+import { createQueryHooks, isSupportedMethod } from './create-query-hooks';
+import type { Alike, Equal, Expect, ExpectFalse } from './jest/test-utils';
+import type { UnaryHooks } from './unary-hooks';
+import type { DisableQuery } from './utils';
+
+describe('isSupportedMethod', () => {
   const patch = (kind: MethodKind) => ({
     ...ElizaService.methods.say,
     kind,
   });
 
-  it("allows Unary methods", () => {
+  it('allows Unary methods', () => {
     const method = patch(MethodKind.Unary);
     const isSupported = isSupportedMethod(method);
     expect(isSupported).toBeTruthy();
 
     if (!isSupported) {
       // eslint-disable-next-line jest/no-conditional-expect -- this conditional is required for type inferencing
-      expect("that this should not fail").toStrictEqual("a failure");
+      expect('that this should not fail').toStrictEqual('a failure');
       return; // returning is necessary for TypeScript inference below
     }
 
-    type typeKind = Expect<Equal<typeof method.kind, MethodKind.Unary>>;
+    type ExpectType_Kind = Expect<Equal<typeof method.kind, MethodKind.Unary>>;
   });
 
-  it("rejects all other methods", () => {
+  it('rejects all other methods', () => {
     expect(isSupportedMethod(patch(MethodKind.BiDiStreaming))).toBeFalsy();
     expect(isSupportedMethod(patch(MethodKind.ClientStreaming))).toBeFalsy();
     expect(isSupportedMethod(patch(MethodKind.ServerStreaming))).toBeFalsy();
   });
 });
 
-describe("createQueryHooks", () => {
+describe('createQueryHooks', () => {
   const service = ElizaService;
 
-  it("creates hooks for unary methods", () => {
+  it('creates hooks for unary methods', () => {
     const hooks = createQueryHooks({
       service: {
         ...service,
         methods: {
           ...service.methods,
-          ["sayAgain"]: {
+          ['sayAgain']: {
             ...service.methods.say,
           },
         },
       },
     });
 
-    type typeSay = Expect<
+    type ExpectType_Say = Expect<
       Equal<typeof hooks.say, UnaryHooks<SayRequest, SayResponse>>
     >;
 
-    type typeHooksKeys = Expect<
-      Equal<[keyof typeof hooks], ["say" | "sayAgain"]>
+    type ExpectType_HooksKeys = Expect<
+      Equal<[keyof typeof hooks], ['say' | 'sayAgain']>
     >;
-    expect(Object.keys(hooks)).toStrictEqual(["say", "sayAgain"]);
+    expect(Object.keys(hooks)).toStrictEqual(['say', 'sayAgain']);
 
-    type typeConverse = ExpectFalse<Alike<keyof typeof hooks, "converse">>;
-    expect(hooks).not.toHaveProperty("converse");
+    type ExpectType_Converse = ExpectFalse<
+      Alike<keyof typeof hooks, 'converse'>
+    >;
+    expect(hooks).not.toHaveProperty('converse');
 
-    type typeGetQueryKey = Equal<
-      typeof hooks["say"]["getQueryKey"],
+    type ExpectType_GetQueryKey = Equal<
+      typeof hooks['say']['getQueryKey'],
       (
-        input: DisableQuery | PartialMessage<SayRequest>
+        input: DisableQuery | PartialMessage<SayRequest>,
       ) => ConnectQueryKey<SayRequest>
     >;
-    expect(hooks.say).toHaveProperty("getQueryKey", expect.any(Function));
+    expect(hooks.say).toHaveProperty('getQueryKey', expect.any(Function));
 
-    type typeMethodInfo = Expect<
+    type ExpectType_MethodInfo = Expect<
       Equal<
-        typeof hooks["say"]["methodInfo"],
+        typeof hooks['say']['methodInfo'],
         MethodInfoUnary<SayRequest, SayResponse>
       >
     >;
-    expect(hooks.say).toHaveProperty("methodInfo", service.methods.say);
+    expect(hooks.say).toHaveProperty('methodInfo', service.methods.say);
 
-    expect(hooks.say).toHaveProperty("useQuery", expect.any(Function));
+    expect(hooks.say).toHaveProperty('useQuery', expect.any(Function));
   });
 
-  it("filters out non-unary methods", () => {
+  it('filters out non-unary methods', () => {
     const customService: ServiceType = {
       ...service,
       methods: {
-        ["BiDiStreaming"]: {
-          name: "BiDiStreaming",
+        ['BiDiStreaming']: {
+          name: 'BiDiStreaming',
           kind: MethodKind.BiDiStreaming,
         } as MethodInfo,
-        ["ClientStreaming"]: {
-          name: "ClientStreaming",
+        ['ClientStreaming']: {
+          name: 'ClientStreaming',
           kind: MethodKind.ClientStreaming,
         } as MethodInfo,
-        ["ServerStreaming"]: {
-          name: "ServerStreaming",
+        ['ServerStreaming']: {
+          name: 'ServerStreaming',
           kind: MethodKind.ServerStreaming,
         } as MethodInfo,
-        ["Unary"]: {
-          name: "Unary",
+        ['Unary']: {
+          name: 'Unary',
           kind: MethodKind.Unary,
         } as MethodInfo,
       },
@@ -128,24 +130,24 @@ describe("createQueryHooks", () => {
 
     const hooks = createQueryHooks({ service: customService });
 
-    expect(Object.keys(hooks)).toStrictEqual(["Unary"]);
+    expect(Object.keys(hooks)).toStrictEqual(['Unary']);
   });
 
-  it("skips unrecognized or missing method kinds", () => {
-    jest.spyOn(console, "error").mockImplementation(() => {});
+  it('skips unrecognized or missing method kinds', () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
 
     const customService: ServiceType = {
       ...service,
       methods: {
-        ["Missing"]: {
-          name: "Missing",
+        ['Missing']: {
+          name: 'Missing',
         } as MethodInfo,
-        ["Bad"]: {
-          name: "Bad",
-          kind: "Bad",
+        ['Bad']: {
+          name: 'Bad',
+          kind: 'Bad',
         } as unknown as MethodInfo,
-        ["Unary"]: {
-          name: "Unary",
+        ['Unary']: {
+          name: 'Unary',
           kind: MethodKind.Unary,
         } as MethodInfo,
       },
@@ -153,13 +155,13 @@ describe("createQueryHooks", () => {
 
     const hooks = createQueryHooks({ service: customService });
 
-    expect(Object.keys(hooks)).toStrictEqual(["Unary"]);
+    expect(Object.keys(hooks)).toStrictEqual(['Unary']);
 
     expect(console.error).toHaveBeenCalledWith(
-      new Error("Invariant failed: unrecognized method kind: undefined")
+      new Error('Invariant failed: unrecognized method kind: undefined'),
     );
     expect(console.error).toHaveBeenCalledWith(
-      new Error("Invariant failed: unrecognized method kind: Bad")
+      new Error('Invariant failed: unrecognized method kind: Bad'),
     );
   });
 });
